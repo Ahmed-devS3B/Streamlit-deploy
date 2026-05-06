@@ -3,21 +3,38 @@ from huggingface_hub import InferenceClient
 from dotenv import load_dotenv
 import os
 
+# Load token from .env file
 load_dotenv()
 
-st.title("Hello, SI 👋")
+# Page title
+st.title("AI Emotion Detector")
 
-input_user = st.text_input("Enter your text here:")
+# User input
+user_text = st.text_area("Write something here:")
 
+# Hugging Face Client
 client = InferenceClient(
     provider="auto",
     api_key=os.getenv("HF_TOKEN"),
 )
 
-if input_user:
-    result = client.text_classification(
-        input_user,
-        model="distilbert/distilbert-base-uncased-finetuned-sst-2-english"
-    )
+# Analyze Button
+if st.button("Analyze Emotion"):
 
-    st.write(result[0]['label'])
+    if user_text:
+
+        result = client.text_classification(
+            user_text,
+            model="j-hartmann/emotion-english-distilroberta-base"
+        )
+
+        # Get highest emotion
+        emotion = result[0]['label']
+        score = round(result[0]['score'] * 100, 2)
+
+        st.subheader("Result 👇")
+        st.write(f"Emotion: **{emotion}**")
+        st.write(f"Confidence: **{score}%**")
+
+    else:
+        st.warning("Please enter some text first.")
