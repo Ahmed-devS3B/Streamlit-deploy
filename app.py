@@ -1,17 +1,23 @@
 import streamlit as st
+from huggingface_hub import InferenceClient
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 st.title("Hello, SI 👋")
 
-name = st.text_input("What's your name ?")
+input_user = st.text_input("Enter your text here:")
 
-if name:
-    st.write(f"Welcome, {name.title()} 👋")
+client = InferenceClient(
+    provider="auto",
+    api_key=os.getenv("HF_TOKEN"),
+)
 
-age = st.slider("What's your age ?", 0, 100, 25)
+if input_user:
+    result = client.text_classification(
+        input_user,
+        model="distilbert/distilbert-base-uncased-finetuned-sst-2-english"
+    )
 
-if age < 18:
-    st.write("You are a kid.")
-elif age > 18 and age < 65:
-    st.write("You are an adult.")
-else:
-    st.write("You are a senior.")
+    st.write(result[0]['label'])
